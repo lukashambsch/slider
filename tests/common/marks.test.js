@@ -6,19 +6,19 @@ const { Range } = Slider;
 
 describe('marks', () => {
   it('should render marks correctly when `marks` is not an empty object', () => {
-    const marks = { 0: '0', 30: '30', 100: '100' };
+    const marks = { 0: 0, 30: '30', 99: '', 100: '100' };
 
     const sliderWrapper = mount(<Slider value={30} marks={marks} />);
     expect(sliderWrapper.find('.rc-slider-mark-text').length).toBe(3);
-    expect(sliderWrapper.find('.rc-slider-mark-text').get(0).innerHTML).toBe('0');
-    expect(sliderWrapper.find('.rc-slider-mark-text').get(1).innerHTML).toBe('30');
-    expect(sliderWrapper.find('.rc-slider-mark-text').get(2).innerHTML).toBe('100');
+    expect(sliderWrapper.find('.rc-slider-mark-text').at(0).instance().innerHTML).toBe('0');
+    expect(sliderWrapper.find('.rc-slider-mark-text').at(1).instance().innerHTML).toBe('30');
+    expect(sliderWrapper.find('.rc-slider-mark-text').at(2).instance().innerHTML).toBe('100');
 
     const rangeWrapper = mount(<Range value={[0, 30]} marks={marks} />);
     expect(rangeWrapper.find('.rc-slider-mark-text').length).toBe(3);
-    expect(rangeWrapper.find('.rc-slider-mark-text').get(0).innerHTML).toBe('0');
-    expect(rangeWrapper.find('.rc-slider-mark-text').get(1).innerHTML).toBe('30');
-    expect(rangeWrapper.find('.rc-slider-mark-text').get(2).innerHTML).toBe('100');
+    expect(rangeWrapper.find('.rc-slider-mark-text').at(0).instance().innerHTML).toBe('0');
+    expect(rangeWrapper.find('.rc-slider-mark-text').at(1).instance().innerHTML).toBe('30');
+    expect(rangeWrapper.find('.rc-slider-mark-text').at(2).instance().innerHTML).toBe('100');
   });
 
   it.skip('should select correct value while click on marks', () => {

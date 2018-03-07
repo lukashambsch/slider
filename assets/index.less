@@ -60,19 +60,26 @@
     background-color: #fff;
     touch-action: pan-x;
 
+    &:focus {
+      border-color: tint(@primary-color, 20%);
+      box-shadow: 0 0 0 5px tint(@primary-color, 50%);
+      outline: none;
+    }
+
+    &-click-focused:focus {
+      border-color: tint(@primary-color, 50%);
+      box-shadow: unset;
+    }
+
     &:hover {
       border-color: tint(@primary-color, 20%);
     }
+
     &:active {
       border-color: tint(@primary-color, 20%);
       box-shadow: 0 0 5px tint(@primary-color, 20%);
       cursor: -webkit-grabbing;
       cursor: grabbing;
-    }
-    &:focus {
-      border-color: tint(@primary-color, 20%);
-      box-shadow: 0 0 0 5px tint(@primary-color, 50%);
-      outline: none;
     }
   }
 
@@ -115,12 +122,6 @@
     cursor: pointer;
     border-radius: 50%;
     vertical-align: middle;
-    &:first-child {
-      margin-left: -4px;
-    }
-    &:last-child {
-      margin-left: -4px;
-    }
     &-active {
       border-color: tint(@primary-color, 50%);
     }

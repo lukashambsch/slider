@@ -11,6 +11,8 @@ class Slider extends React.Component {
     defaultValue: PropTypes.number,
     value: PropTypes.number,
     disabled: PropTypes.bool,
+    autoFocus: PropTypes.bool,
+    tabIndex: PropTypes.number,
   };
 
   constructor(props) {
@@ -34,6 +36,13 @@ class Slider extends React.Component {
         !('maximumTrackStyle' in props),
         'maximumTrackStyle will be deprecate, please use railStyle instead.'
       );
+    }
+  }
+
+  componentDidMount() {
+    const { autoFocus, disabled } = this.props;
+    if (autoFocus && !disabled) {
+      this.focus();
     }
   }
 
@@ -74,6 +83,8 @@ class Slider extends React.Component {
     this.startPosition = position;
 
     if (value === prevValue) return;
+
+    this.prevMovedHandleIndex = 0;
 
     this.onChange({ value });
   }
@@ -135,6 +146,7 @@ class Slider extends React.Component {
       minimumTrackStyle,
       trackStyle,
       handleStyle,
+      tabIndex,
       min,
       max,
       handle: handleGenerator,
@@ -143,6 +155,7 @@ class Slider extends React.Component {
     const offset = this.calcOffset(value);
     const handle = handleGenerator({
       className: `${prefixCls}-handle`,
+      prefixCls,
       vertical,
       offset,
       value,
@@ -150,6 +163,8 @@ class Slider extends React.Component {
       disabled,
       min,
       max,
+      index: 0,
+      tabIndex,
       style: handleStyle[0] || handleStyle,
       ref: h => this.saveHandle(0, h),
     });

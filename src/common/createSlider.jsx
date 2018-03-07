@@ -38,6 +38,9 @@ export default function createSlider(Component) {
       railStyle: PropTypes.object,
       dotStyle: PropTypes.object,
       activeDotStyle: PropTypes.object,
+      autoFocus: PropTypes.bool,
+      onFocus: PropTypes.func,
+      onBlur: PropTypes.func,
     };
 
     static defaultProps = {
@@ -86,6 +89,11 @@ export default function createSlider(Component) {
       this.removeDocumentEvents();
     }
 
+    componentDidMount() {
+      // Snapshot testing cannot handle refs, so be sure to null-check this.
+      this.document = this.sliderRef && this.sliderRef.ownerDocument;
+    }
+
     onMouseDown = (e) => {
       if (e.button !== 0) { return; }
 
@@ -98,9 +106,9 @@ export default function createSlider(Component) {
         this.dragOffset = position - handlePosition;
         position = handlePosition;
       }
+      this.removeDocumentEvents();
       this.onStart(position);
       this.addDocumentMouseEvents();
-      utils.pauseEvent(e);
     }
 
     onTouchStart = (e) => {
@@ -121,30 +129,35 @@ export default function createSlider(Component) {
     }
 
     onFocus = (e) => {
-      const isVertical = this.props.vertical;
-
+      const { onFocus, vertical } = this.props;
       if (utils.isEventFromHandle(e, this.handlesRefs)) {
-        const handlePosition = utils.getHandleCenterPosition(isVertical, e.target);
-
+        const handlePosition = utils.getHandleCenterPosition(vertical, e.target);
         this.dragOffset = 0;
         this.onStart(handlePosition);
         utils.pauseEvent(e);
+        if (onFocus) {
+          onFocus(e);
+        }
       }
     }
 
     onBlur = (e) => {
+      const { onBlur } = this.props;
       this.onEnd(e);
+      if (onBlur) {
+        onBlur(e);
+      }
     };
 
     addDocumentTouchEvents() {
       // just work for Chrome iOS Safari and Android Browser
-      this.onTouchMoveListener = addEventListener(document, 'touchmove', this.onTouchMove);
-      this.onTouchUpListener = addEventListener(document, 'touchend', this.onEnd);
+      this.onTouchMoveListener = addEventListener(this.document, 'touchmove', this.onTouchMove);
+      this.onTouchUpListener = addEventListener(this.document, 'touchend', this.onEnd);
     }
 
     addDocumentMouseEvents() {
-      this.onMouseMoveListener = addEventListener(document, 'mousemove', this.onMouseMove);
-      this.onMouseUpListener = addEventListener(document, 'mouseup', this.onEnd);
+      this.onMouseMoveListener = addEventListener(this.document, 'mousemove', this.onMouseMove);
+      this.onMouseUpListener = addEventListener(this.document, 'mouseup', this.onEnd);
     }
 
     removeDocumentEvents() {
@@ -155,6 +168,12 @@ export default function createSlider(Component) {
       this.onMouseMoveListener && this.onMouseMoveListener.remove();
       this.onMouseUpListener && this.onMouseUpListener.remove();
       /* eslint-enable no-unused-expressions */
+    }
+
+    onMouseUp = () => {
+      if (this.handlesRefs[this.prevMovedHandleIndex]) {
+        this.handlesRefs[this.prevMovedHandleIndex].clickFocus();
+      }
     }
 
     onMouseMove = (e) => {
@@ -179,6 +198,18 @@ export default function createSlider(Component) {
     onKeyDown = (e) => {
       if (this.sliderRef && utils.isEventFromHandle(e, this.handlesRefs)) {
         this.onKeyboard(e);
+      }
+    }
+
+    focus() {
+      if (!this.props.disabled) {
+        this.handlesRefs[0].focus();
+      }
+    }
+
+    blur() {
+      if (!this.props.disabled) {
+        this.handlesRefs[0].blur();
       }
     }
 
@@ -226,6 +257,11 @@ export default function createSlider(Component) {
       this.handlesRefs[index] = handle;
     }
 
+    onClickMarkLabel = (e, value) => {
+      e.stopPropagation();
+      this.onChange({ value });
+    }
+
     render() {
       const {
         prefixCls,
@@ -259,6 +295,7 @@ export default function createSlider(Component) {
           className={sliderClassName}
           onTouchStart={disabled ? noop : this.onTouchStart}
           onMouseDown={disabled ? noop : this.onMouseDown}
+          onMouseUp={disabled ? noop : this.onMouseUp}
           onKeyDown={disabled ? noop : this.onKeyDown}
           onFocus={disabled ? noop : this.onFocus}
           onBlur={disabled ? noop : this.onBlur}
@@ -289,6 +326,7 @@ export default function createSlider(Component) {
           {handles}
           <Marks
             className={`${prefixCls}-mark`}
+            onClickLabel={disabled ? noop : this.onClickMarkLabel}
             vertical={vertical}
             marks={marks}
             included={included}
